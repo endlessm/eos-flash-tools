@@ -21,6 +21,9 @@ flash_device () {
     gzip -cd $2 | pv | dd bs=1M of=$1 iflag=fullblock conv=sparse seek=1 skip=1 || return 1
     # when dd exits it causes a broken pipe on gzip's end, so we ignore that err
     gzip -cd $2 2>/dev/null | dd bs=1M of=$1 count=1 iflag=fullblock conv=fsync || return 1
+
+    # Ensures that nothing is written to the disk before shutdown.
+    blockdev --setro $1
     return 0
 }
 
