@@ -21,6 +21,9 @@ flash_device () {
     gzip -cd $2 | pv | dd bs=1M of=$1 iflag=fullblock conv=sparse seek=1 skip=1 || return 1
     # when dd exits it causes a broken pipe on gzip's end, so we ignore that err
     gzip -cd $2 2>/dev/null | dd bs=1M of=$1 count=1 iflag=fullblock conv=fsync || return 1
+
+    # Ensures that nothing is written to the disk before shutdown.
+    blockdev --setro $1
     return 0
 }
 
@@ -54,7 +57,7 @@ for BLK in ${BLKS}; do
     BLK_PATH=$(udevadm info -q path -n $BLK)
     [ "/dev/$(basename $(dirname $BLK_PATH))" != "$OLDROOT_DEV" ] || continue
 
-    mount /dev/$BLK /mnt 2>/dev/null || continue
+    mount -o ro /dev/$BLK /mnt 2>/dev/null || continue
     printf "Mounted /dev/${BLK}.\n" 
 
     if [ -f /mnt/*.gz ] ; then
@@ -135,7 +138,9 @@ done
 
 if [ -f $IMG_PATH ] ; then
     printf "Flashing ${IMG_PATH} to ${OLDROOT_DEV}. This will take a few minutes...\n"
-    dmesg -n info
+
+    # Change log level to hide noisy kernel messages that might concern ground team.
+    dmesg -n 1
     if ! flash_device ${OLDROOT_DEV} ${IMG_PATH} ; then
         printf "Flashing failed. Machine must now be flashed from backup USB.\n"
         sleep 5
@@ -144,11 +149,10 @@ else
     printf "Image was not accessible.\n"
     sleep 5
 fi
-
 umount /mnt
 
 printf "Flashing is complete!\n"
-printf "Powering off. Remove the USB before restarting the computer.\n"
-sleep 5
+printf "Image flashed successfully. Press [ENTER] key to shutdown computer. Remove USB once computer is off.\n"
+read _
 poweroff -f
 

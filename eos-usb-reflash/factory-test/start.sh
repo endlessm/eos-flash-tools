@@ -8,7 +8,10 @@ set -e
 KERNEL_VERSION="$(uname -r)"
 
 echo "Unpacking initramfs in /run/initramfs"
-mkdir /run/initramfs
+
+if [ ! -d /run/initramfs ] ; then
+    mkdir /run/initramfs
+fi
 cd /run/initramfs
 INITRAMFS_PATH="/var/wistron/initramfs-${KERNEL_VERSION}.img"
 
