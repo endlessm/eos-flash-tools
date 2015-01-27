@@ -138,7 +138,9 @@ done
 
 if [ -f $IMG_PATH ] ; then
     printf "Flashing ${IMG_PATH} to ${OLDROOT_DEV}. This will take a few minutes...\n"
-    dmesg -n info
+
+    # Change log level to hide noisy kernel messages that might concern ground team.
+    dmesg -n 1
     if ! flash_device ${OLDROOT_DEV} ${IMG_PATH} ; then
         printf "Flashing failed. Machine must now be flashed from backup USB.\n"
         sleep 5
@@ -147,11 +149,10 @@ else
     printf "Image was not accessible.\n"
     sleep 5
 fi
-
 umount /mnt
 
 printf "Flashing is complete!\n"
-printf "Powering off. Remove the USB before restarting the computer.\n"
-sleep 5
+printf "Image flashed successfully. Press [ENTER] key to shutdown computer. Remove USB once computer is off.\n"
+read _
 poweroff -f
 
