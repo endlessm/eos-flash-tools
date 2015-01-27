@@ -57,7 +57,7 @@ for BLK in ${BLKS}; do
     BLK_PATH=$(udevadm info -q path -n $BLK)
     [ "/dev/$(basename $(dirname $BLK_PATH))" != "$OLDROOT_DEV" ] || continue
 
-    mount /dev/$BLK /mnt 2>/dev/null || continue
+    mount -o ro /dev/$BLK /mnt 2>/dev/null || continue
     printf "Mounted /dev/${BLK}.\n" 
 
     if [ -f /mnt/*.gz ] ; then
