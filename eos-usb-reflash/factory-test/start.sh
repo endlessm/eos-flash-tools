@@ -13,7 +13,8 @@ if [ ! -d /run/initramfs ] ; then
     mkdir /run/initramfs
 fi
 cd /run/initramfs
-INITRAMFS_PATH="/var/wistron/initramfs-${KERNEL_VERSION}.img"
+
+INITRAMFS_PATH=/var/wistron/initramfs.img
 
 if [ -f $INITRAMFS_PATH ] ; then
     zcat $INITRAMFS_PATH | cpio -id >/dev/null || exit 1
