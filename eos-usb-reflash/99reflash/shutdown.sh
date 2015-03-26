@@ -152,6 +152,15 @@ for dev in ${OLDROOT_DEV}*; do
     fi
 done
 
+# Check that all necessary image files have been located.
+if [ "$IS_DUAL_IMAGE" = true ]; then
+    [ -z $DISK1_IMG_PATH ] && printf "Search for eMMC image failed. Exiting.\n" && exit 1
+    [ -z $DISK2_IMG_PATH ] && printf "Search for SD card image failed. Exiting.\n" && exit 1
+    printf "Found images ${DISK1_IMG_PATH} and ${DISK2_IMG_PATH} at /dev/${BLK}.\n"
+else
+    [ -z $IMG_PATH ] && printf "Search for single HDD image failed. Exiting.\n" && exit 1
+    printf "Found ${IMG_PATH} at /dev/${BLK}.\n"
+fi
 
 if [ -f $IMG_PATH ] ; then
     printf "Flashing ${IMG_PATH} to ${OLDROOT_DEV}. This will take a few minutes...\n"
