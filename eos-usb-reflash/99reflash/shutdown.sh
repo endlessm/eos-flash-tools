@@ -162,23 +162,26 @@ else
     printf "Found ${IMG_PATH} at /dev/${BLK}.\n"
 fi
 
-if [ -f $IMG_PATH ] ; then
-    printf "Flashing ${IMG_PATH} to ${OLDROOT_DEV}. This will take a few minutes...\n"
-
-    # Change log level to hide noisy kernel messages that might concern ground team.
-    dmesg -n 1
-    if ! flash_device ${OLDROOT_DEV} ${IMG_PATH} ; then
+printf "Flashing image(s). This will take a few minutes...\n"
+# Change log level to hide noisy kernel messages that might concern ground team.
+dmesg -n 1
+if [ "$IS_DUAL_IMAGE" = true ]; then
+    if ! flash_device ${OLDROOT_DEV} ${DISK1_IMG_PATH} ||
+    ! flash_device ${EXTRA_DEV} ${DISK2_IMG_PATH}; then
         printf "Flashing failed. Machine must now be flashed from backup USB.\n"
-        sleep 5
+    else
+        printf "Flashing is complete!\nImages flashed successfully.\n"
     fi
 else
-    printf "Image was not accessible.\n"
-    sleep 5
+    if ! flash_device ${OLDROOT_DEV} ${IMG_PATH} ; then
+        printf "Flashing failed. Machine must now be flashed from backup USB.\n"
+    else
+        printf "Flashing is complete!\nImages flashed successfully.\n"
+    fi
 fi
 umount /mnt
 
-printf "Flashing is complete!\n"
-printf "Image flashed successfully. Press [ENTER] key to shutdown computer. Remove USB once computer is off.\n"
+printf "Press [ENTER] key to shutdown computer. Remove USB once computer is off.\n"
 read _
 poweroff -f
 
