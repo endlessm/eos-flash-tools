@@ -66,28 +66,36 @@ for BLK in ${BLKS}; do
     BLK_PATH=$(udevadm info -q path -n $BLK)
     [ "/dev/$(basename $(dirname $BLK_PATH))" != "$OLDROOT_DEV" ] || continue
 
+    IMG_FOUND=false
     mount -o ro /dev/$BLK /mnt 2>/dev/null || continue
     printf "Mounted /dev/${BLK}.\n" 
 
-    if [ -f /mnt/*.gz ] ; then
-	for IMG in /mnt/*.gz ; do
-            printf "Found ${IMG} at /dev/${BLK}.\n"
-            IMG_PATH=$IMG
-            break
-        done
-        break
-    else
-        umount /mnt
-        printf "Did not find img in /dev/${BLK}.\n"
-    fi
-done
+    for IMG in /mnt/*.img.gz ; do
+        if [ -e $IMG ]; then
+            IMG_FOUND=true
+            case "$IMG" in
+                *disk1*)
+                    DISK1_IMG_PATH=$IMG
+                    ;;
+                *disk2*)
+                    DISK2_IMG_PATH=$IMG
+                    ;;
+                # Single image devices are flashed with images that don't
+                # contain the string "disk" in their filenames.
+                *)
+                    IMG_PATH=$IMG
+                    ;;
+            esac
+        fi
+    done
 
-# Check to see that an image was found.
-if [ -z $IMG_PATH ] ; then
-    printf "Failed to find image. Exiting.\n"
-    sleep 5
-    exit 1 
-fi
+    if [ "$IMG_FOUND" = false ]; then
+        printf "Did not find img in /dev/${BLK}.\n"
+        umount /mnt
+        continue
+    fi
+    break
+done
 
 killall_proc_mountpoint /oldroot
 # Plymouthd is not killed by killall_proc_mountpoint, preventing /oldroot
