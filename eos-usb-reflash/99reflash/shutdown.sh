@@ -13,6 +13,7 @@ export PATH=/usr/sbin:/usr/bin:/sbin:/bin
 # Redirecting output so that it is visible to the user.
 exec >/dev/tty
 exec 2>&1
+IS_DUAL_IMAGE=false
 
 # Zero-ing out the first MB first, so that the device is only bootable
 # if the dd succeeds.
@@ -31,8 +32,16 @@ printf "Beginning reflashing process.\n"
 printf "Searching for device to flash to...\n"
 
 # Since the partition might map to any parent disk, we use udevadm
-# to get the path of the /oldroot partition and then use its parent
+# to get the path of the partition and then use its parent
 # directory to find the parent disk.
+if [ -e /dev/disk/by-label/extra ]; then
+    IS_DUAL_IMAGE=true
+    EXTRA_PART=$(readlink -f /dev/disk/by-label/extra)
+    EXTRA_PATH=$(udevadm info -q path -n ${EXTRA_PART})
+    EXTRA_DEV="/dev/$(basename $(dirname $EXTRA_PATH))"
+    printf "Detected that device requires extra image flashed at ${EXTRA_DEV}.\n"
+fi
+
 OLDROOT_PART=$(findmnt -rvnf -o SOURCE /oldroot)
 OLDROOT_PATH=$(udevadm info -q path -n ${OLDROOT_PART})
 OLDROOT_DEV="/dev/$(basename $(dirname $OLDROOT_PATH))"
