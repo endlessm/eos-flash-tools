@@ -11,7 +11,8 @@ Here are descriptions of the three files required on a drive to run this system.
 
 - `Wistron_Factory_Test.tar`. This is a compressed folder that contains `start.sh`, the shell script that sets up the initramfs, and `initramfs-3.13.0-27.generic.img`, the compressed initramfs.
 - `Wistron_Factory_Test.tar.sha256`, the sha256 checksum.
-- *.gz, the image that is to be flashed on the machine. _Note: There should only be one image on the USB that matches this pattern._
+- *.img.gz, the images that are to be flashed on the machine.
+_Note: If two images are to be flashed (in the case of a Sqwerty with 2 images, the image that will be flashed on the eMMC should have "disk1" in the name, as in "eos2.2.disk1.img.gz". The image for the SD card should similarly have "disk2" in the name. Any image that contains neither of these strings will be assumed to be an image that should be flashed for a single storage device machine)._
 
 Although our S3 servers will contain all the necessary files, here are instructions to generate these files from this repo.
 - Checkout the master version of this repo.
@@ -32,5 +33,5 @@ Although our S3 servers will contain all the necessary files, here are instructi
     # sha256sum Wistron_Factory_Test.tar > Wistron_Factory_Test.tar.sha256
     ```
 
-- Finally, the files `Wistron_Factory_Test.tar` and `Wistron_Factory_Test.tar.sha256` should be copied into the root directory of a USB Drive. The image that is to be flashed should also be on this drive and should have a name that ends in `.gz` (e.g. `eos-eos2-i386-i386.150112-220042.Guatemala.img.gz`).
+- Finally, the files `Wistron_Factory_Test.tar` and `Wistron_Factory_Test.tar.sha256` should be copied into the root directory of a USB Drive.
 
