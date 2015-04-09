@@ -13,6 +13,7 @@ export PATH=/usr/sbin:/usr/bin:/sbin:/bin
 # Redirecting output so that it is visible to the user.
 exec >/dev/tty
 exec 2>&1
+IS_DUAL_IMAGE=false
 
 # Zero-ing out the first MB first, so that the device is only bootable
 # if the dd succeeds.
@@ -31,8 +32,16 @@ printf "Beginning reflashing process.\n"
 printf "Searching for device to flash to...\n"
 
 # Since the partition might map to any parent disk, we use udevadm
-# to get the path of the /oldroot partition and then use its parent
+# to get the path of the partition and then use its parent
 # directory to find the parent disk.
+if [ -e /dev/disk/by-label/extra ]; then
+    IS_DUAL_IMAGE=true
+    EXTRA_PART=$(readlink -f /dev/disk/by-label/extra)
+    EXTRA_PATH=$(udevadm info -q path -n ${EXTRA_PART})
+    EXTRA_DEV="/dev/$(basename $(dirname $EXTRA_PATH))"
+    printf "Detected that device requires extra image flashed at ${EXTRA_DEV}.\n"
+fi
+
 OLDROOT_PART=$(findmnt -rvnf -o SOURCE /oldroot)
 OLDROOT_PATH=$(udevadm info -q path -n ${OLDROOT_PART})
 OLDROOT_DEV="/dev/$(basename $(dirname $OLDROOT_PATH))"
@@ -57,28 +66,36 @@ for BLK in ${BLKS}; do
     BLK_PATH=$(udevadm info -q path -n $BLK)
     [ "/dev/$(basename $(dirname $BLK_PATH))" != "$OLDROOT_DEV" ] || continue
 
+    IMG_FOUND=false
     mount -o ro /dev/$BLK /mnt 2>/dev/null || continue
     printf "Mounted /dev/${BLK}.\n" 
 
-    if [ -f /mnt/*.gz ] ; then
-	for IMG in /mnt/*.gz ; do
-            printf "Found ${IMG} at /dev/${BLK}.\n"
-            IMG_PATH=$IMG
-            break
-        done
-        break
-    else
-        umount /mnt
-        printf "Did not find img in /dev/${BLK}.\n"
-    fi
-done
+    for IMG in /mnt/*.img.gz ; do
+        if [ -e $IMG ]; then
+            IMG_FOUND=true
+            case "$IMG" in
+                *disk1*)
+                    DISK1_IMG_PATH=$IMG
+                    ;;
+                *disk2*)
+                    DISK2_IMG_PATH=$IMG
+                    ;;
+                # Single image devices are flashed with images that don't
+                # contain the string "disk" in their filenames.
+                *)
+                    IMG_PATH=$IMG
+                    ;;
+            esac
+        fi
+    done
 
-# Check to see that an image was found.
-if [ -z $IMG_PATH ] ; then
-    printf "Failed to find image. Exiting.\n"
-    sleep 5
-    exit 1 
-fi
+    if [ "$IMG_FOUND" = false ]; then
+        printf "Did not find img in /dev/${BLK}.\n"
+        umount /mnt
+        continue
+    fi
+    break
+done
 
 killall_proc_mountpoint /oldroot
 # Plymouthd is not killed by killall_proc_mountpoint, preventing /oldroot
@@ -135,24 +152,36 @@ for dev in ${OLDROOT_DEV}*; do
     fi
 done
 
+# Check that all necessary image files have been located.
+if [ "$IS_DUAL_IMAGE" = true ]; then
+    [ -z $DISK1_IMG_PATH ] && printf "Search for eMMC image failed. Exiting.\n" && exit 1
+    [ -z $DISK2_IMG_PATH ] && printf "Search for SD card image failed. Exiting.\n" && exit 1
+    printf "Found images ${DISK1_IMG_PATH} and ${DISK2_IMG_PATH} at /dev/${BLK}.\n"
+else
+    [ -z $IMG_PATH ] && printf "Search for single HDD image failed. Exiting.\n" && exit 1
+    printf "Found ${IMG_PATH} at /dev/${BLK}.\n"
+fi
 
-if [ -f $IMG_PATH ] ; then
-    printf "Flashing ${IMG_PATH} to ${OLDROOT_DEV}. This will take a few minutes...\n"
-
-    # Change log level to hide noisy kernel messages that might concern ground team.
-    dmesg -n 1
-    if ! flash_device ${OLDROOT_DEV} ${IMG_PATH} ; then
+printf "Flashing image(s). This will take a few minutes...\n"
+# Change log level to hide noisy kernel messages that might concern ground team.
+dmesg -n 1
+if [ "$IS_DUAL_IMAGE" = true ]; then
+    if ! flash_device ${OLDROOT_DEV} ${DISK1_IMG_PATH} ||
+    ! flash_device ${EXTRA_DEV} ${DISK2_IMG_PATH}; then
         printf "Flashing failed. Machine must now be flashed from backup USB.\n"
-        sleep 5
+    else
+        printf "Flashing is complete!\nImages flashed successfully.\n"
     fi
 else
-    printf "Image was not accessible.\n"
-    sleep 5
+    if ! flash_device ${OLDROOT_DEV} ${IMG_PATH} ; then
+        printf "Flashing failed. Machine must now be flashed from backup USB.\n"
+    else
+        printf "Flashing is complete!\nImages flashed successfully.\n"
+    fi
 fi
 umount /mnt
 
-printf "Flashing is complete!\n"
-printf "Image flashed successfully. Press [ENTER] key to shutdown computer. Remove USB once computer is off.\n"
+printf "Press [ENTER] key to shutdown computer. Remove USB once computer is off.\n"
 read _
 poweroff -f
 
