@@ -17,13 +17,13 @@ _Note: If two images are to be flashed (in the case of a Sqwerty with 2 images, 
 Although our S3 servers will contain all the necessary files, here are instructions to generate these files from this repo.
 - Checkout the master version of this repo.
 - Build an initramfs using the included image.
-    ```
+```
     # cd eos-usb-reflash
     # cp -R 99reflash /usr/lib/dracut/modules.d/ 
     # cd factory-test
     # dracut -f --add "reflash dash drm kernel-modules resume ostree systemd base" --libdirs="/lib/i386-linux-gnu /usr/lib/i386-linux-gnu /lib/i686-linux-gnu /usr/lib/i686-linux-gnu" initramfs.img 3.13.0-27-generic
     # cd ..
-    ```
+```
 - Package `factory-test` into an uncompressed tar archive without the top-level directory, using 
     ```
     # tar -C factory-test -c . -f Wistron_Factory_Test.tar
