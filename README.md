@@ -24,14 +24,14 @@ Although our S3 servers will contain all the necessary files, here are instructi
     # dracut -f --add "reflash dash drm kernel-modules resume ostree systemd base" --libdirs="/lib/i386-linux-gnu /usr/lib/i386-linux-gnu /lib/i686-linux-gnu /usr/lib/i686-linux-gnu" initramfs.img 3.13.0-27-generic
     # cd ..
 ```
-- Package `factory-test` into an uncompressed tar archive without the top-level directory, using 
-    ```
+- Package `factory-test` into an uncompressed tar archive without the top-level directory, using: 
+```
     # tar -C factory-test -c . -f Wistron_Factory_Test.tar
-    ```
+```
 - Make the sha256 checksum of that tar archive.
-    ```
+```
     # sha256sum Wistron_Factory_Test.tar > Wistron_Factory_Test.tar.sha256
-    ```
+```
 
 - Finally, the files `Wistron_Factory_Test.tar` and `Wistron_Factory_Test.tar.sha256` should be copied into the root directory of a USB Drive.
 
