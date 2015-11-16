@@ -24,6 +24,10 @@ Although our S3 servers will contain all the necessary files, here are instructi
     # dracut -f --add "reflash dash drm kernel-modules resume ostree systemd base" --libdirs="/lib/i386-linux-gnu /usr/lib/i386-linux-gnu /lib/i686-linux-gnu /usr/lib/i686-linux-gnu" initramfs.img 3.13.0-27-generic
     # cd ..
 ```
+For ARM:
+```
+    # dracut -f --add "reflash dash drm kernel-modules resume ostree systemd base"  --libdirs="/lib/arm-linux-gnueabihf /usr/lib/arm-linux-gnueabihf" initramfs.img 3.10.33
+```
 - Package `factory-test` into an uncompressed tar archive without the top-level directory, using: 
 ```
     # tar -C factory-test -c . -f Wistron_Factory_Test.tar
