@@ -23,7 +23,7 @@ Here are instructions to generate these files from this repo.
     # cd eos-usb-reflash
     # cp -R 99reflash /usr/lib/dracut/modules.d/ 
     # cd factory-test
-    # dracut -f --add "reflash dash drm kernel-modules resume ostree systemd base" --libdirs="/lib/i386-linux-gnu /usr/lib/i386-linux-gnu /lib/i686-linux-gnu /usr/lib/i686-linux-gnu" initramfs.img 3.13.0-27-generic
+    # dracut -f --add "reflash dash drm kernel-modules resume ostree systemd base" --libdirs="/lib/i386-linux-gnu /usr/lib/i386-linux-gnu /lib/i686-linux-gnu /usr/lib/i686-linux-gnu" initramfs.img 4.2.0-10-generic
     # cd ..
 ```
 For ARM:
