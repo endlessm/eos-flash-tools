@@ -18,6 +18,7 @@ IS_DUAL_IMAGE=false
 # Zero-ing out the first MB first, so that the device is only bootable
 # if the dd succeeds.
 flash_device () {
+    blkdiscard -v $1
     dd bs=1M if=/dev/zero of=$1 count=1 conv=fsync || return 1
     gzip -cd $2 | pv | dd bs=1M of=$1 iflag=fullblock seek=1 skip=1 || return 1
     # when dd exits it causes a broken pipe on gzip's end, so we ignore that err
