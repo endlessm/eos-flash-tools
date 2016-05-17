@@ -4,6 +4,7 @@
 # image to internal storage.
 
 set -e
+mydir=$(dirname $(readlink -f $0))
 
 KERNEL_VERSION="$(uname -r)"
 
@@ -14,7 +15,7 @@ if [ ! -d /run/initramfs ] ; then
 fi
 cd /run/initramfs
 
-INITRAMFS_PATH=/var/wistron/initramfs.img
+INITRAMFS_PATH=$mydir/initramfs.img
 
 if [ -f $INITRAMFS_PATH ] ; then
     zcat $INITRAMFS_PATH | cpio -id >/dev/null || exit 1
@@ -28,5 +29,5 @@ sleep 2
 
 echo "Removing testsuite directory and powering off."
 sleep 2
-rm -rf /var/wistron
+rm -rf $mydir
 poweroff
