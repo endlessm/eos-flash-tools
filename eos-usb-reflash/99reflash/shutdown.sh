@@ -15,14 +15,30 @@ exec >/dev/tty
 exec 2>&1
 IS_DUAL_IMAGE=false
 
+unz() {
+    case "$1" in
+        *.gz)
+            gzip -cd $1 | pv
+            ;;
+        *.xz)
+            xz -cdv $1
+            ;;
+        *)
+            printf "Found an image we couldn't decompress?! Exiting.\n" >&2
+            sleep 5
+            exit 1
+            ;;
+    esac
+}
+
 # Zero-ing out the first MB first, so that the device is only bootable
 # if the dd succeeds.
 flash_device () {
     blkdiscard -v $1
     dd bs=1M if=/dev/zero of=$1 count=1 conv=fsync || return 1
-    gzip -cd $2 | pv | dd bs=1M of=$1 iflag=fullblock seek=1 skip=1 || return 1
+    unz $2 | dd bs=1M of=$1 iflag=fullblock seek=1 skip=1 || return 1
     # when dd exits it causes a broken pipe on gzip's end, so we ignore that err
-    gzip -cd $2 2>/dev/null | dd bs=1M of=$1 count=1 iflag=fullblock conv=fsync || return 1
+    unz $2 2>/dev/null | dd bs=1M of=$1 count=1 iflag=fullblock conv=fsync || return 1
 
     # Ensures that nothing is written to the disk before shutdown.
     blockdev --setro $1
@@ -71,7 +87,7 @@ for BLK in ${BLKS}; do
     mount -o ro /dev/$BLK /mnt 2>/dev/null || continue
     printf "Mounted /dev/${BLK}.\n" 
 
-    for IMG in /mnt/*.img.gz ; do
+    for IMG in /mnt/*.img.[gx]z ; do
         if [ -e $IMG ]; then
             IMG_FOUND=true
             case "$IMG" in
