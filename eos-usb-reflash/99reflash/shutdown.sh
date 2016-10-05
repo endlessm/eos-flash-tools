@@ -14,6 +14,8 @@ export PATH=/usr/sbin:/usr/bin:/sbin:/bin
 # Force-execute on visible console.
 exec </dev/tty0 >/dev/tty0 2>&1
 
+setterm -blank 0 -powersave off 2>/dev/null
+
 IS_DUAL_IMAGE=false
 
 unz() {
