@@ -10,9 +10,10 @@ export TERM=linux
 export PATH=/usr/sbin:/usr/bin:/sbin:/bin
 . /lib/dracut-lib.sh
 
-# Redirecting output so that it is visible to the user.
-exec >/dev/tty
-exec 2>&1
+# Old EOS-2.5 EC-100 builds have serial console as the primary console.
+# Force-execute on visible console.
+exec </dev/tty0 >/dev/tty0 2>&1
+
 IS_DUAL_IMAGE=false
 
 unz() {

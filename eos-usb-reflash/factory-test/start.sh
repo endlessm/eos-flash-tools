@@ -27,6 +27,7 @@ else
 fi
 sleep 2
 
+systemctl mask plymouth-poweroff.service plymouth-shutdown.service plymouth-halt.service
 echo "Removing testsuite directory and powering off."
 sleep 2
 rm -rf $mydir
