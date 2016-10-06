@@ -13,7 +13,7 @@ depends() {
 
 install() {
     local _d
-    dracut_install umount poweroff reboot halt losetup gzip lsblk dd pkill basename dirname pv blockdev blkdiscard xz setterm
+    dracut_install umount poweroff reboot halt losetup gzip lsblk dd pkill basename dirname pv blockdev blkdiscard xz setterm setleds
     dracut_install -o kexec
     inst "$moddir/shutdown.sh" "$prefix/shutdown"
     [ -e "${initdir}/lib" ] || mkdir -m 0755 -p ${initdir}/lib

@@ -201,6 +201,8 @@ else
 fi
 umount /mnt
 
+setleds +caps +scroll +num
+
 printf "Press [ENTER] key to shutdown computer. Remove USB once computer is off.\n"
 read _
 poweroff -f
