@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # -*- mode: shell-script; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
 # ex: ts=8 sw=4 sts=4 et filetype=sh
 #
@@ -39,7 +39,9 @@ unz() {
 flash_device () {
     blkdiscard -v $1
     dd bs=1M if=/dev/zero of=$1 count=1 conv=fsync || return 1
+    set -o pipefail
     unz $2 | dd bs=1M of=$1 iflag=fullblock seek=1 skip=1 || return 1
+    set +o pipefail
     # when dd exits it causes a broken pipe on gzip's end, so we ignore that err
     unz $2 2>/dev/null | dd bs=1M of=$1 count=1 iflag=fullblock conv=fsync || return 1
 
