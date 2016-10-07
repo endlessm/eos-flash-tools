@@ -119,10 +119,10 @@ for BLK in ${BLKS}; do
     break
 done
 
-killall_proc_mountpoint /oldroot
-# Plymouthd is not killed by killall_proc_mountpoint, preventing /oldroot
-# from being umounted properly. So we kill it manually.
-pkill -f plymouthd
+# Kill all processes, pausing them first to avoid any races with the
+# spawning of new processes
+kill -STOP -1
+kill -9 -1
 
 umount_a() {
     local _did_umount="n"
@@ -161,7 +161,6 @@ if strstr "$(cat /proc/mounts)" "/oldroot"; then
         elif [ $_pid -ne $$ ]; then
             warn "Still running [$_pid] $(cat /proc/$_pid/cmdline)"
         fi
-        ls -l /proc/$_pid/fd 2>&1 | vwarn
     done
 fi
 
