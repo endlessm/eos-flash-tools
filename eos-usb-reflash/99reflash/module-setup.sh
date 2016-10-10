@@ -13,7 +13,7 @@ depends() {
 
 install() {
     local _d
-    dracut_install umount poweroff reboot halt losetup gzip lsblk dd pkill basename dirname pv blockdev blkdiscard xz
+    dracut_install umount poweroff reboot halt losetup gzip lsblk dd pkill basename dirname pv blockdev blkdiscard xz setterm setleds
     dracut_install -o kexec
     inst "$moddir/shutdown.sh" "$prefix/shutdown"
     [ -e "${initdir}/lib" ] || mkdir -m 0755 -p ${initdir}/lib
@@ -22,5 +22,7 @@ install() {
     for _d in $hookdirs shutdown shutdown-emergency; do
         mkdir -m 0755 -p ${initdir}/lib/dracut/hooks/$_d
     done
+    mkdir -p ${initdir}/lib/terminfo/l
+    cp /lib/terminfo/l/linux ${initdir}/lib/terminfo/l
 }
 

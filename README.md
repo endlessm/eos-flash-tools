@@ -23,7 +23,7 @@ Here are instructions to generate these files from this repo.
     # cd eos-usb-reflash
     # cp -R 99reflash /usr/lib/dracut/modules.d/ 
     # cd factory-test
-    # dracut -f --add "reflash dash drm kernel-modules resume ostree systemd base" initramfs.img $(uname -r)
+    # dracut -f --modules "reflash" initramfs.img $(uname -r)
     # cd ..
 ```
 - Package `factory-test` into an uncompressed tar archive without the top-level directory, using: 

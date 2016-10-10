@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # -*- mode: shell-script; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
 # ex: ts=8 sw=4 sts=4 et filetype=sh
 #
@@ -10,9 +10,12 @@ export TERM=linux
 export PATH=/usr/sbin:/usr/bin:/sbin:/bin
 . /lib/dracut-lib.sh
 
-# Redirecting output so that it is visible to the user.
-exec >/dev/tty
-exec 2>&1
+# Old EOS-2.5 EC-100 builds have serial console as the primary console.
+# Force-execute on visible console.
+exec </dev/tty0 >/dev/tty0 2>&1
+
+setterm -blank 0 -powersave off 2>/dev/null
+
 IS_DUAL_IMAGE=false
 
 unz() {
@@ -36,7 +39,9 @@ unz() {
 flash_device () {
     blkdiscard -v $1
     dd bs=1M if=/dev/zero of=$1 count=1 conv=fsync || return 1
+    set -o pipefail
     unz $2 | dd bs=1M of=$1 iflag=fullblock seek=1 skip=1 || return 1
+    set +o pipefail
     # when dd exits it causes a broken pipe on gzip's end, so we ignore that err
     unz $2 2>/dev/null | dd bs=1M of=$1 count=1 iflag=fullblock conv=fsync || return 1
 
@@ -114,10 +119,10 @@ for BLK in ${BLKS}; do
     break
 done
 
-killall_proc_mountpoint /oldroot
-# Plymouthd is not killed by killall_proc_mountpoint, preventing /oldroot
-# from being umounted properly. So we kill it manually.
-pkill -f plymouthd
+# Kill all processes, pausing them first to avoid any races with the
+# spawning of new processes
+kill -STOP -1
+kill -9 -1
 
 umount_a() {
     local _did_umount="n"
@@ -156,7 +161,6 @@ if strstr "$(cat /proc/mounts)" "/oldroot"; then
         elif [ $_pid -ne $$ ]; then
             warn "Still running [$_pid] $(cat /proc/$_pid/cmdline)"
         fi
-        ls -l /proc/$_pid/fd 2>&1 | vwarn
     done
 fi
 
@@ -197,6 +201,8 @@ else
     fi
 fi
 umount /mnt
+
+setleds +caps +scroll +num
 
 printf "Press [ENTER] key to shutdown computer. Remove USB once computer is off.\n"
 read _
