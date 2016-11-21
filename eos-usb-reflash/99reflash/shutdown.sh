@@ -71,7 +71,7 @@ if [ ! -z $OLDROOT_DEV ] ; then
     printf "Found root device at ${OLDROOT_DEV}.\n"
 else
     printf "Could not find root device. Exiting.\n"
-    sleep 5
+    sleep 10m
     exit 1
 fi
 
@@ -168,18 +168,18 @@ fi
 for dev in ${OLDROOT_DEV}*; do
     if findmnt $dev; then
         printf "NO! ${dev} is already mounted! Exiting."
-        sleep 5
+        sleep 10m
         exit 1
     fi
 done
 
 # Check that all necessary image files have been located.
 if [ "$IS_DUAL_IMAGE" = true ]; then
-    [ -z $DISK1_IMG_PATH ] && printf "Search for eMMC image failed. Exiting.\n" && exit 1
-    [ -z $DISK2_IMG_PATH ] && printf "Search for SD card image failed. Exiting.\n" && exit 1
+    [ -z $DISK1_IMG_PATH ] && printf "Search for eMMC image failed. Exiting.\n" && sleep 10m && exit 1
+    [ -z $DISK2_IMG_PATH ] && printf "Search for SD card image failed. Exiting.\n" && sleep 10m && exit 1
     printf "Found images ${DISK1_IMG_PATH} and ${DISK2_IMG_PATH} at /dev/${BLK}.\n"
 else
-    [ -z $IMG_PATH ] && printf "Search for single HDD image failed. Exiting.\n" && exit 1
+    [ -z $IMG_PATH ] && printf "Search for single HDD image failed. Exiting.\n" && sleep 10m && exit 1
     printf "Found ${IMG_PATH} at /dev/${BLK}.\n"
 fi
 
