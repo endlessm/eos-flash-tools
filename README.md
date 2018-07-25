@@ -4,7 +4,7 @@ This repo contains the various flashing tools that aid in the image flashing pro
 
 ## eos-usb-reflash
 
-We are taking advantage of the `eos-factory-test` service in order to automatically detect and run a new reflashing system. The system works as described [on its wiki page](https://github.com/endlessm/eos-documentation/wiki/USB-Reflashing). 
+We are taking advantage of the `eos-factory-test` service in order to automatically detect and run a new reflashing system. The system works as described [on its wiki page](https://phabricator.endlessm.com/w/field/automatic_usb_reflash/).
 
 ### How to regenerate the necessary files
 Here are descriptions of the three files required on a drive to run this system.
