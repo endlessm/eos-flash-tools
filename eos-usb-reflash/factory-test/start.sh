@@ -6,8 +6,6 @@
 set -e
 mydir=$(dirname $(readlink -f $0))
 
-KERNEL_VERSION="$(uname -r)"
-
 echo "Unpacking initramfs in /run/initramfs"
 
 if [ ! -d /run/initramfs ] ; then
